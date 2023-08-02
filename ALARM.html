@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ALARM</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f2f2f2;
+      margin: 0;
+      padding: 0;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    input[type="date"] {
+      padding: 5px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    p#rezultat {
+      font-size: 18px;
+      margin-top: 20px;
+      color: #333;
+    }
+
+    @keyframes fadeInOut {
+      0% { opacity: 0; }
+      50% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    p#rezultat.show-animation {
+      animation: fadeInOut 2s ease-in-out;
+    }
+  </style>
+</head>
+<body>
+  <center><h1>SET AN ALARM: </h1></center>
+  <center>
+    <label for="datum">Set date for your alarm: </label>
+    <input type="date" id="datum">
+    <label for="vrijeme">Set time for your alarm: </label>
+    <input type="time" id="vrijeme">
+  </center>
+  <center>
+    <button onclick="startCountdown()">SET ALARM</button>
+    <button onclick="stopAlarm()">STOP ALARM</button>
+    <button onclick="resetCountdown()">RESET</button>
+  </center>
+  <p id="rezultat"></p>
+  <audio id="audio" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
+
+  <script>
+    let countdownInterval;
+    let audioElement;
+
+    function startCountdown() {
+      clearInterval(countdownInterval);
+
+      const unosDatum = new Date(document.getElementById('datum').value);
+      const unosVrijeme = document.getElementById('vrijeme').value;
+
+      if (isNaN(unosDatum) || unosVrijeme === '') {
+        alert("Please, enter a valid date and time!");
+        return;
+      }
+
+      const unosVrijemeArray = unosVrijeme.split(":");
+      const unosSat = parseInt(unosVrijemeArray[0]);
+      const unosMinuta = parseInt(unosVrijemeArray[1]);
+
+      const unosDatumVrijeme = new Date(unosDatum);
+      unosDatumVrijeme.setHours(unosSat, unosMinuta, 0, 0);
+
+      const rezultatElement = document.getElementById('rezultat');
+
+      countdownInterval = setInterval(function () {
+        const danas = new Date();
+        const razlika = unosDatumVrijeme.getTime() - danas.getTime();
+
+        if (razlika <= 0) {
+          clearInterval(countdownInterval);
+          rezultatElement.textContent = "Your alarm has expired!";
+          audioElement = document.getElementById('audio');
+          audioElement.play();
+
+        } else {
+          const preostaloDana = Math.floor(razlika / (1000 * 3600 * 24));
+          const preostaloSati = Math.floor((razlika % (1000 * 3600 * 24)) / (1000 * 3600));
+          const preostaleMinute = Math.floor((razlika % (1000 * 3600)) / (1000 * 60));
+          const preostaleSekunde = Math.floor((razlika % (1000 * 60)) / 1000);
+
+          rezultatElement.textContent = `Time left until ${unosDatumVrijeme.toLocaleString()}: ${preostaloDana} days, ${preostaloSati} hours, ${preostaleMinute} minutes, ${preostaleSekunde} seconds.`;
+        }
+      }, 1000);
+    }
+
+    function stopAlarm() {
+      if (audioElement) {
+        audioElement.pause();
+        audioElement.currentTime = 0;
+      }
+    }
+
+    function resetCountdown() {
+      clearInterval(countdownInterval);
+      document.getElementById('rezultat').textContent = '';
+      document.getElementById('datum').value = '';
+      document.getElementById('vrijeme').value = '';
+      stopAlarm();
+    }
+  </script>
+</body>
+</html>
